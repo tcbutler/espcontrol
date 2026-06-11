@@ -195,6 +195,10 @@ bool global_web_server_active = false;             // NOLINT
 
 bool espcontrol_web_server_active() { return global_web_server_active; }
 
+bool espcontrol_web_server_httpd_running() {
+  return global_deferred_server != nullptr && global_deferred_server->get_server() != nullptr;
+}
+
 bool espcontrol_web_server_set_active(bool active) {
   if (global_deferred_server == nullptr)
     return false;
@@ -238,7 +242,14 @@ void AsyncWebServer::begin() {
   config.lru_purge_enable = true;
   // Use custom close function that shuts down before closing to prevent lwIP race conditions
   config.close_fn = AsyncWebServer::safe_close_with_shutdown;
-  if (httpd_start(&this->server_, &config) == ESP_OK) {
+  esp_err_t start_result = httpd_start(&this->server_, &config);
+  if (start_result != ESP_OK) {
+    ESP_LOGE(TAG, "httpd_start failed on port %u: %s", this->port_, esp_err_to_name(start_result));
+    this->server_ = nullptr;
+    return;
+  }
+  ESP_LOGI(TAG, "Web server listening on port %u", this->port_);
+  if (this->server_ != nullptr) {
     const httpd_uri_t handler_get = {
         .uri = "",
         .method = HTTP_GET,

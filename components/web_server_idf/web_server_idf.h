@@ -247,6 +247,8 @@ class AsyncWebServer {
 // configuration UI is in use.
 bool espcontrol_web_server_set_active(bool active);
 bool espcontrol_web_server_active();
+// True when the httpd task is actually bound and serving (start can fail).
+bool espcontrol_web_server_httpd_running();
 #endif
 
 class AsyncWebHandler {

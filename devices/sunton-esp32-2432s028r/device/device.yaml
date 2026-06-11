@@ -358,6 +358,20 @@ lvgl:
 # Show the page navigation arrows only while a carousel page (main grid or
 # a subpage) is active and at least one subpage exists to navigate to.
 interval:
+  # Self-heal: if setup mode is on but the httpd failed to bind (e.g. it
+  # started before the network stack was ready), retry the start.
+  - interval: 30s
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return id(web_setup_mode).state &&
+                     !esphome::web_server_idf::espcontrol_web_server_httpd_running();
+          then:
+            - lambda: |-
+                ESP_LOGW("setup_mode", "Setup mode on but web server not running; retrying start");
+                esphome::web_server_idf::espcontrol_web_server_set_active(false);
+                esphome::web_server_idf::espcontrol_web_server_set_active(true);
   - interval: 1s
     then:
       - lambda: |-
