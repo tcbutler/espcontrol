@@ -189,6 +189,12 @@ api:
 wifi:
   output_power: 8.5dB
   power_save_mode: none
+  # Mesh networks advertise one SSID across many BSSIDs. Without fast_connect
+  # the ESP32 rescans and gets band-steered between nodes on every reconnect,
+  # which shows up as "Authentication Fail" on the first attempt and an
+  # unstable, intermittently-unreachable link. fast_connect locks onto the
+  # first/last good BSSID and skips the scan, holding a steady association.
+  fast_connect: true
 
 logger:
   hardware_uart: UART0
