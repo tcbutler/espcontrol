@@ -161,8 +161,12 @@ api:
 
 # CYD boards brown out their USB-serial chip when the radio transmits at
 # full power; 8.5dB is the community-standard fix and plenty for indoor use.
+# Light-sleep power saving (the ESP32 default) drops mDNS and fresh inbound
+# connections minutes after boot — the panel is USB-powered, keep the radio
+# awake.
 wifi:
   output_power: 8.5dB
+  power_save_mode: none
 
 logger:
   hardware_uart: UART0
