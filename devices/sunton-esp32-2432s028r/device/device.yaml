@@ -296,6 +296,11 @@ switch:
       - lambda: |-
           esphome::web_server_idf::espcontrol_web_server_set_active(false);
           ESP_LOGI("setup_mode", "Web setup mode off; RAM returned to the panel");
+      # Server is down now and the panel has its RAM back: rebuild the grid
+      # once so card edits made during setup mode take effect without a reboot.
+      # (Grid rebuilds were deferred while the server was serving.)
+      - delay: 150ms
+      - script.execute: refresh_button_grid
 
 # ---------------------------------------------------------------------------
 # Ambient light sensor (LDR on GPIO34, brighter = lower reading)

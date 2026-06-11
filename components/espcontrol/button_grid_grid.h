@@ -634,10 +634,31 @@ inline void refresh_card_layout(BtnSlot &s, const ParsedCfg &p,
   }
 }
 
+#ifdef ESPCONTROL_WEB_DEFERRED
+// Defined in the web_server_idf component; forward-declared here to avoid an
+// include dependency from the grid code.
+namespace esphome { namespace web_server_idf { bool espcontrol_web_server_active(); } }  // NOLINT
+#endif
+
+// On deferred-web (no-PSRAM) panels the config web server and a full LVGL grid
+// rebuild must never run at the same time: together they exhaust internal RAM
+// and hang the software renderer. While setup mode is serving, the grid is not
+// even on screen (the setup screen is), so defer the rebuild — it runs once
+// when the server stops (web setup mode off) or at the next boot.
+inline bool &grid_refresh_pending() { static bool pending = false; return pending; }
+
 inline void grid_refresh_layout(
     BtnSlot *slots, const GridConfig &cfg,
     const std::string &order_str,
     lv_obj_t *main_page_obj = nullptr) {
+#ifdef ESPCONTROL_WEB_DEFERRED
+  if (esphome::web_server_idf::espcontrol_web_server_active()) {
+    grid_refresh_pending() = true;
+    ESP_LOGI("sensors", "Grid refresh deferred while web setup server is active");
+    return;
+  }
+  grid_refresh_pending() = false;
+#endif
   ESP_LOGI("sensors", "Grid refresh: layout start (%lu ms)", esphome::millis());
   set_display_temperature_unit(cfg.temperature_unit, cfg.timezone);
   const DisplayProfile display = display_profile_from_grid_config(cfg);
