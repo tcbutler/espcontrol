@@ -5,23 +5,25 @@
 # names or sizes. Sizes remain device-specific behind the same style names.
 #
 # Flash on this board is 4MB with OTA, so glyph data is aggressively trimmed:
-# icons render at 2bpp, the separate card-icon size is dropped (the manifest
-# maps climateCardIcon to font_icon_main), and the Hebrew extras are omitted.
+# a single icon size is shared (the manifest maps climateCardIcon to
+# font_icon_main) and the Hebrew extras are omitted. Icons are 4bpp/32px —
+# hardware-verified; 2bpp would save ~50KB more but is untested since the
+# heap-exhaustion fix and is a candidate if flash gets tight again.
 # =============================================================================
 
 font:
   # Main action/setup icons (also used for climate card icons)
   - file: 'https://github.com/Templarian/MaterialDesign-Webfont/raw/v7.4.47/fonts/materialdesignicons-webfont.ttf'
     id: font_icon_main
-    size: 36
-    bpp: 2
+    size: 32
+    bpp: 4
     glyphs: !include ../../../common/assets/icon_glyphs.yaml
 
   # Status, network, and subpage icons
   - file: 'https://github.com/Templarian/MaterialDesign-Webfont/raw/v7.4.47/fonts/materialdesignicons-webfont.ttf'
     id: font_icon_status
     size: 18
-    bpp: 2
+    bpp: 4
     glyphs: !include ../../../common/assets/network_status_glyphs.yaml
 
   # Main labels and setup body text
@@ -67,7 +69,7 @@ font:
   # Large sensor values
   - file: "gfonts://Roboto@Thin"
     id: font_number_value_large
-    size: 56
+    size: 52
     bpp: 4
     glyphs:
       - "0123456789.-°/%"
@@ -76,7 +78,7 @@ font:
   # Large modal numbers
   - file: "gfonts://Roboto@Thin"
     id: font_number_modal
-    size: 48
+    size: 44
     bpp: 4
     glyphs:
       - "0123456789.-°/%"

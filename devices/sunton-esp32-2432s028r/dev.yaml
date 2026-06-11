@@ -9,12 +9,27 @@
 substitutions:
   name: "espcontrol-cyd"
   friendly_name: "EspControl CYD"
-  espcontrol_component_url: "../.."
+  # ESPHome's git source needs an absolute file:// URL for local checkouts.
+  espcontrol_component_url: "file:///Users/tom/Documents/Coding/CYDespControl"
   espcontrol_component_ref: "HEAD"
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  ap:
+    ssid: "${friendly_name}"
+
+captive_portal:
+
+# Bench-only heap tracer (sensor updates don't log at INFO level).
+interval:
+  - interval: 10s
+    then:
+      - lambda: |-
+          ESP_LOGI("heap", "free=%u min=%u largest=%u",
+                   heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
+                   heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL),
+                   heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
 
 packages:
   espcontrol: !include packages.yaml
