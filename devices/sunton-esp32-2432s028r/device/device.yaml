@@ -1,0 +1,301 @@
+# =============================================================================
+# DEVICE - Sunton ESP32-2432S028R "Cheap Yellow Display" hardware definition
+# =============================================================================
+# Pin assignments, peripherals, and platform config for the 2.8" 320x240
+# panel. Plain ESP32-WROOM-32 with NO PSRAM and 4MB flash, so this target
+# runs everything from internal RAM: keep LVGL buffers small and avoid
+# PSRAM-dependent features (image cards stay disabled in the manifest).
+#
+# Defaults target the dual-USB (micro-USB + USB-C) board revision, which
+# ships an ST7789 panel with inverted colors. For the original single
+# micro-USB revision override:
+#   cyd_display_model: "ILI9341", cyd_display_invert: "false"
+# =============================================================================
+
+substitutions:
+  espcontrol_component_url: "https://github.com/tcbutler/espcontrol"
+  espcontrol_component_ref: "cyd-support"
+  # Dual-USB board revision defaults (ST7789 panel, inverted colors)
+  cyd_display_model: "ST7789V"
+  cyd_display_invert: "true"
+
+# ---------------------------------------------------------------------------
+# ESP32 platform (4MB flash, no PSRAM, ESP-IDF framework)
+# ---------------------------------------------------------------------------
+esp32:
+  board: esp32dev
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+    version: 5.5.2
+    source: https://github.com/pioarduino/esp-idf/releases/download/v5.5.2/esp-idf-v5.5.2.tar.xz
+    platform_version: 55.03.37
+    sdkconfig_options:
+      # Keep the ESP32 task watchdog long enough for display startup while
+      # remaining compatible with ESPHome 2026.4 and newer.
+      CONFIG_ESP_TASK_WDT_TIMEOUT_S: "30"
+      # Optimize for size: the 4MB flash leaves little headroom for the
+      # OTA-capable dual-app partition layout.
+      CONFIG_COMPILER_OPTIMIZATION_SIZE: "y"
+
+# ---------------------------------------------------------------------------
+# External component
+# ---------------------------------------------------------------------------
+external_components:
+  - source:
+      type: git
+      url: ${espcontrol_component_url}
+      ref: ${espcontrol_component_ref}
+      path: components
+    components: [espcontrol, web_server_idf, artwork_image]
+    refresh: 1s
+
+espcontrol:
+
+# ---------------------------------------------------------------------------
+# ESPHome core (device name from substitutions)
+# ---------------------------------------------------------------------------
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  platformio_options:
+    build_flags:
+      - "-DESPCONTROL_DISABLE_TODO=1"
+      - "-DESPCONTROL_MAX_GRID_SLOTS=4"
+  on_boot:
+    - priority: -100
+      then:
+        - lambda: 'id(screen_rotation_ready) = true;'
+        - script.execute: clock_bar_apply
+
+# ---------------------------------------------------------------------------
+# OTA updates (ESPHome native + HTTP-based)
+# ---------------------------------------------------------------------------
+ota:
+  - platform: esphome
+    on_begin:
+      then:
+        - script.execute: show_update_writing
+        - script.wait: show_update_writing
+    on_end:
+      then:
+        - globals.set:
+            id: firmware_update_complete_pending
+            value: 'true'
+        - lambda: 'global_preferences->sync();'
+    on_error:
+      then:
+        - script.execute: show_update_failed
+  - platform: http_request
+    on_begin:
+      then:
+        - script.execute: show_update_writing
+        - script.wait: show_update_writing
+    on_end:
+      then:
+        - globals.set:
+            id: firmware_update_complete_pending
+            value: 'true'
+        - lambda: 'global_preferences->sync();'
+    on_error:
+      then:
+        - script.execute: show_update_failed
+
+safe_mode:
+  id: cyd_2432s028r_safe_mode
+  boot_is_good_after: 10s
+
+# ---------------------------------------------------------------------------
+# Shared infrastructure (API, logging, web server, restart button)
+# ---------------------------------------------------------------------------
+packages:
+  core_infra: !include ../../../common/device/core_infra.yaml
+
+# Serve the per-device web UI bundle from this fork until the device is
+# published upstream (core_infra pins the upstream repo hash).
+web_server:
+  js_url: https://cdn.jsdelivr.net/gh/tcbutler/espcontrol@cyd-support/docs/public/webserver/${device_slug}/www.js?v=${firmware_version}
+
+# Everything shares the ~300KB of internal RAM on this panel: WiFi, LVGL,
+# the web UI, and the API. Keep the native API connection pool modest.
+api:
+  listen_backlog: 4
+  max_connections: 3
+  max_send_queue: 12
+
+logger:
+  hardware_uart: UART0
+
+# ---------------------------------------------------------------------------
+# Backlight (LEDC PWM output + monochromatic light entity)
+# ---------------------------------------------------------------------------
+output:
+  - platform: ledc
+    pin: GPIO21
+    id: gpio_backlight_pwm
+    frequency: 1000Hz
+    zero_means_zero: true
+  # RGB status LED channels (common-anode, active-low)
+  - platform: ledc
+    pin: GPIO4
+    id: cyd_led_red
+    inverted: true
+  - platform: ledc
+    pin: GPIO16
+    id: cyd_led_green
+    inverted: true
+  - platform: ledc
+    pin: GPIO17
+    id: cyd_led_blue
+    inverted: true
+
+light:
+  - platform: monochromatic
+    output: gpio_backlight_pwm
+    name: Display Backlight
+    icon: mdi:lightbulb-on
+    id: display_backlight
+    restore_mode: RESTORE_DEFAULT_ON
+    default_transition_length: 0s
+    gamma_correct: 1.0
+    on_turn_on:
+      then:
+        - if:
+            condition:
+              lambda: |-
+                auto now = panel_time_or_fallback(id(panel_time).now(), id(homeassistant_time).now());
+                return (id(screen_schedule_asleep) &&
+                        !screen_schedule_clock_mode(id(schedule_mode).current_option())) ||
+                       screen_schedule_waiting_for_time(
+                         id(screen_schedule_trigger).state,
+                         id(schedule_enabled).state,
+                         now.is_valid());
+            then:
+              - script.execute: backlight_force_display_off
+            else:
+              - if:
+                  condition:
+                    lambda: 'return id(screensaver_display_off_active);'
+                  then:
+                    - script.execute: screensaver_wake
+    on_turn_off:
+      then:
+        - if:
+            condition:
+              lambda: |-
+                return !id(display_asleep) &&
+                       !id(screen_schedule_asleep) &&
+                       !id(screensaver_display_off_active) &&
+                       !id(screensaver_dimmed_active);
+            then:
+              - script.execute: screen_schedule_manual_sleep
+
+  # Onboard RGB status LED (rear, active-low)
+  - platform: rgb
+    name: Status LED
+    id: cyd_status_led
+    icon: mdi:led-outline
+    red: cyd_led_red
+    green: cyd_led_green
+    blue: cyd_led_blue
+    restore_mode: RESTORE_DEFAULT_OFF
+    default_transition_length: 0s
+
+# ---------------------------------------------------------------------------
+# Ambient light sensor (LDR on GPIO34, brighter = lower reading)
+# ---------------------------------------------------------------------------
+sensor:
+  - platform: adc
+    pin: GPIO34
+    name: Ambient Light
+    icon: mdi:brightness-5
+    id: cyd_ambient_light
+    attenuation: 12db
+    update_interval: 60s
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+
+# ---------------------------------------------------------------------------
+# SPI buses (display on HSPI pins, touch controller on its own bus)
+# ---------------------------------------------------------------------------
+spi:
+  - id: tft_spi
+    clk_pin: GPIO14
+    mosi_pin: GPIO13
+    miso_pin: GPIO12
+  - id: touch_spi
+    clk_pin: GPIO25
+    mosi_pin: GPIO32
+    miso_pin: GPIO39
+
+# ---------------------------------------------------------------------------
+# Touchscreen (XPT2046 resistive, wakes screensaver on touch)
+# ---------------------------------------------------------------------------
+touchscreen:
+  - platform: xpt2046
+    id: my_touchscreen
+    display: my_display
+    spi_id: touch_spi
+    cs_pin: GPIO33
+    interrupt_pin: GPIO36
+    update_interval: 50ms
+    threshold: 400
+    calibration:
+      x_min: 280
+      x_max: 3860
+      y_min: 340
+      y_max: 3860
+    transform:
+      swap_xy: true
+      mirror_x: true
+    on_touch:
+      - script.execute: screensaver_wake
+
+# ---------------------------------------------------------------------------
+# Display (2.8" 320x240 SPI panel, landscape with USB ports on the right)
+# ---------------------------------------------------------------------------
+display:
+  - platform: ili9xxx
+    model: ${cyd_display_model}
+    id: my_display
+    spi_id: tft_spi
+    cs_pin: GPIO15
+    dc_pin: GPIO2
+    data_rate: 40MHz
+    invert_colors: ${cyd_display_invert}
+    update_interval: never
+    auto_clear_enabled: false
+    show_test_card: false
+    dimensions:
+      width: 320
+      height: 240
+    transform:
+      swap_xy: true
+      mirror_x: true
+
+# ---------------------------------------------------------------------------
+# LVGL base (display binding, must be before any page definitions)
+# ---------------------------------------------------------------------------
+# buffer_size 12% keeps the draw buffer near 18KB; the full 320x240 frame
+# would not fit alongside WiFi and the web UI in internal RAM.
+# ---------------------------------------------------------------------------
+lvgl:
+  id: main_lvgl
+  setup_priority: 230
+  buffer_size: 12%
+  displays: my_display
+  touchscreens:
+    - touchscreen_id: my_touchscreen
+      long_press_time: 3s
+
+script:
+  - id: cyd_status_led_flash
+    mode: restart
+    then:
+      - light.turn_on:
+          id: cyd_status_led
+          red: 0%
+          green: 30%
+          blue: 0%
+      - delay: 300ms
+      - light.turn_off: cyd_status_led

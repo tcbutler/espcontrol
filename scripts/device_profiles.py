@@ -15,7 +15,7 @@ DEVICE_MANIFEST = ROOT / "devices" / "manifest.json"
 COMMON_ASSETS = ROOT / "common" / "assets"
 DEVICES_DIR = ROOT / "devices"
 
-VALID_CHIP_FAMILIES = {"ESP32-P4", "ESP32-S3"}
+VALID_CHIP_FAMILIES = {"ESP32", "ESP32-P4", "ESP32-S3"}
 VALID_DRAG_MODES = {"swap", "displace"}
 VALID_ROTATIONS = {"0", "90", "180", "270"}
 VALID_DISPLAY_MODES = {"color", "monochrome"}

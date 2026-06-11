@@ -41,6 +41,16 @@ def package_substitution_lines(device: dict) -> list[str]:
         lines.append(f'  firmware_version: "{package["firmwareVersion"]}"')
     for key, value in package["substitutions"].items():
         lines.append(f"  {key}: {value}")
+    # Shared screensaver/schedule clock brightness defaults required by
+    # common/config/display.yaml and common/addon/backlight.yaml.
+    lines.extend(
+        [
+            '  screen_saver_clock_min_brightness: "1"',
+            '  screen_saver_clock_default_brightness: "35"',
+            '  screen_schedule_clock_min_brightness: "1"',
+            '  screen_schedule_clock_default_brightness: "10"',
+        ]
+    )
     if package.get("ethernetSelectable"):
         frequency = package["backlightPwmFrequency"]
         lines.extend(
@@ -87,6 +97,41 @@ def cover_art_substitution_lines(device: dict) -> list[str]:
             "cover_art_time_pad_top": "12",
             "cover_art_progress_width": "480",
             "cover_art_progress_height": "4",
+            "cover_art_text_color": "0xFFFFFF",
+            "cover_art_square_overlay": "true",
+            "cover_art_live_image_updates": "false",
+        },
+        "sunton-esp32-2432s028r": {
+            # No PSRAM on this panel: artwork downloads stay disabled, so the
+            # cover-art screen renders the accent background and text only.
+            "cover_art_size": "240",
+            "cover_art_x": "0",
+            "cover_art_y": "0",
+            "cover_art_accent_x": "0",
+            "cover_art_accent_y": "0",
+            "cover_art_accent_width": "320",
+            "cover_art_accent_height": "240",
+            "cover_art_accent_bg_opa": "80%",
+            "cover_art_accent_opa": "80%",
+            "cover_art_panel_x": "0",
+            "cover_art_panel_y": "0",
+            "cover_art_panel_width": "320",
+            "cover_art_panel_height": "240",
+            "cover_art_panel_pad_top": "12",
+            "cover_art_panel_pad_bottom": "8",
+            "cover_art_panel_pad_left": "12",
+            "cover_art_panel_pad_right": "12",
+            "cover_art_panel_pad_row": "0",
+            "cover_art_title_font": "font_cover_art_title",
+            "cover_art_title_max_height": "140",
+            "cover_art_title_line_space": "0",
+            "cover_art_artist_font": "font_cover_art_artist",
+            "cover_art_artist_pad_top": "4",
+            "cover_art_artist_long_mode": "dot",
+            "cover_art_time_font": "font_cover_art_time",
+            "cover_art_time_pad_top": "8",
+            "cover_art_progress_width": "320",
+            "cover_art_progress_height": "3",
             "cover_art_text_color": "0xFFFFFF",
             "cover_art_square_overlay": "true",
             "cover_art_live_image_updates": "false",

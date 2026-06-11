@@ -1,0 +1,33 @@
+# =============================================================================
+# FACTORY BUILD - Sunton ESP32-2432S028R (2.8" Cheap Yellow Display)
+# =============================================================================
+# Unlike the larger panels, the 4MB flash cannot spare room to inline the
+# web UI bundle (js_include); the web UI loads from the CDN once the panel
+# is on WiFi. WiFi provisioning itself happens on the touchscreen, so no
+# web access is needed before the panel is online.
+# =============================================================================
+
+substitutions:
+  name: "espcontrol-cyd-2432s028r"
+  friendly_name: "Sunton ESP32-2432S028R"
+  firmware_version: "0.0.0"
+  espcontrol_component_url: "file:///config"
+  espcontrol_component_ref: "HEAD"
+
+packages:
+  core: !include ../devices/sunton-esp32-2432s028r/packages.yaml
+
+esphome:
+  name_add_mac_suffix: true
+  project:
+    name: jtenniswood.espcontrol
+    version: "${firmware_version}"
+
+dashboard_import:
+  package_import_url: github://tcbutler/espcontrol/devices/sunton-esp32-2432s028r/esphome.yaml@cyd-support
+
+wifi:
+  ap:
+    ssid: "${friendly_name}"
+
+captive_portal:

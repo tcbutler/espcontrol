@@ -1,0 +1,27 @@
+# =============================================================================
+# BUILD PROFILE - Sunton ESP32-2432S028R (2.8" Cheap Yellow Display)
+# =============================================================================
+# CI/local build entry point for the 320x240 landscape ESP32 panel.
+# =============================================================================
+
+substitutions:
+  name: "espcontrol-cyd-2432s028r"
+  friendly_name: "Sunton ESP32-2432S028R"
+  espcontrol_component_url: "file:///config"
+  espcontrol_component_ref: "HEAD"
+
+esphome:
+  name_add_mac_suffix: true
+
+packages:
+  espcontrol: !include ../devices/sunton-esp32-2432s028r/packages.yaml
+
+wifi:
+  # Compile-only station credentials for CI/local builds. User-imported
+  # deployed configs supply their real WiFi credentials in device YAML.
+  ssid: "ESPControl"
+  password: "espcontrol"
+  ap:
+    ssid: "${friendly_name}"
+
+captive_portal:

@@ -1,0 +1,20 @@
+# =============================================================================
+# DEV CONFIG - Local development entry point (2.8" CYD)
+# =============================================================================
+# Flash with: esphome run dev.yaml
+# Components are pulled from the local checkout; commit C++ changes before
+# compiling so the git-sourced external_components see them.
+# =============================================================================
+
+substitutions:
+  name: "espcontrol-cyd"
+  friendly_name: "EspControl CYD"
+  espcontrol_component_url: "../.."
+  espcontrol_component_ref: "HEAD"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+packages:
+  espcontrol: !include packages.yaml
