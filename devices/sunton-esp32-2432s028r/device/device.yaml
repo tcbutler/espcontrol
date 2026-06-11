@@ -129,9 +129,10 @@ packages:
   core_infra: !include ../../../common/device/core_infra.yaml
 
 # Serve the per-device web UI bundle from this fork until the device is
-# published upstream (core_infra pins the upstream repo hash).
+# published upstream (core_infra pins the upstream repo hash). jsDelivr needs
+# a commit ref (branch refs 502); bump the hash when www.js changes.
 web_server:
-  js_url: https://cdn.jsdelivr.net/gh/tcbutler/espcontrol@cyd-support/docs/public/webserver/${device_slug}/www.js?v=${firmware_version}
+  js_url: https://cdn.jsdelivr.net/gh/tcbutler/espcontrol@fd369c0714eea71cccdd1d8db047eb9aef5a3a88/docs/public/webserver/${device_slug}/www.js?v=${firmware_version}
 
 # Everything shares the ~300KB of internal RAM on this panel: WiFi, LVGL,
 # the web UI, and the API. Keep the native API connection pool modest.
