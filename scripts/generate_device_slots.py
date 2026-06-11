@@ -122,10 +122,12 @@ def cover_art_substitution_lines(device: dict) -> list[str]:
             "cover_art_panel_pad_left": "12",
             "cover_art_panel_pad_right": "12",
             "cover_art_panel_pad_row": "0",
-            "cover_art_title_font": "font_cover_art_title",
+            # Reuse the regular title/body fonts: dedicated cover-art faces
+            # cost ~40KB of glyphs this 4MB target cannot spare.
+            "cover_art_title_font": "font_text_title",
             "cover_art_title_max_height": "140",
             "cover_art_title_line_space": "0",
-            "cover_art_artist_font": "font_cover_art_artist",
+            "cover_art_artist_font": "font_text_body",
             "cover_art_artist_pad_top": "4",
             "cover_art_artist_long_mode": "dot",
             "cover_art_time_font": "font_cover_art_time",

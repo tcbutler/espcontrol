@@ -45,19 +45,8 @@ font:
     bpp: 4
     glyphs: !include ../../../common/assets/text_glyphs.yaml
 
-  # Media cover-art screensaver title
-  - file: "gfonts://Roboto@Light"
-    id: font_cover_art_title
-    size: 26
-    bpp: 4
-    glyphs: !include ../../../common/assets/text_glyphs.yaml
-
-  # Media cover-art screensaver artist
-  - file: "gfonts://Roboto@Light"
-    id: font_cover_art_artist
-    size: 18
-    bpp: 4
-    glyphs: !include ../../../common/assets/text_glyphs.yaml
+  # Cover-art title/artist reuse font_text_title and font_text_body via the
+  # cover_art_*_font substitutions; dedicated faces don't fit 4MB flash.
 
   # Media cover-art screensaver elapsed time
   - file: "gfonts://Roboto"

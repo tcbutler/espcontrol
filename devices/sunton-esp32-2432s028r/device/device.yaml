@@ -64,11 +64,26 @@ esphome:
       - "-DESPCONTROL_MAX_GRID_SLOTS=4"
       # 4MB flash: drop the 18-language translation tables; UI stays English.
       - "-DESPCONTROL_I18N_ENGLISH_ONLY=1"
+      # No PSRAM: the web config server only runs while setup mode is on.
+      - "-DESPCONTROL_WEB_DEFERRED=1"
   on_boot:
     - priority: -100
       then:
         - lambda: 'id(screen_rotation_ready) = true;'
         - script.execute: clock_bar_apply
+    # After every component is up: a panel with no cards configured is mid
+    # onboarding, so bring the web config UI (and captive portal) online.
+    - priority: -300
+      then:
+        - lambda: |-
+            bool configured = !id(button_1_config).state.empty() ||
+                              !id(button_2_config).state.empty() ||
+                              !id(button_3_config).state.empty() ||
+                              !id(button_4_config).state.empty();
+            if (!configured) {
+              ESP_LOGI("setup_mode", "No cards configured yet; starting web setup mode");
+              id(web_setup_mode).turn_on();
+            }
 
 # ---------------------------------------------------------------------------
 # OTA updates (ESPHome native + HTTP-based)
@@ -127,6 +142,9 @@ api:
 
 logger:
   hardware_uart: UART0
+  # INFO strips debug-level format strings from flash; the 4MB OTA layout
+  # needs the headroom. Raise locally when debugging.
+  level: INFO
 
 # ---------------------------------------------------------------------------
 # Backlight (LEDC PWM output + monochromatic light entity)
@@ -195,6 +213,7 @@ light:
   # Onboard RGB status LED (rear, active-low)
   - platform: rgb
     name: Status LED
+    entity_category: config
     id: cyd_status_led
     icon: mdi:led-outline
     red: cyd_led_red
@@ -202,6 +221,31 @@ light:
     blue: cyd_led_blue
     restore_mode: RESTORE_DEFAULT_OFF
     default_transition_length: 0s
+
+# ---------------------------------------------------------------------------
+# Web setup mode: the config web UI's httpd only runs while this is on, so
+# its RAM goes back to LVGL and the API during normal panel use. Auto-starts
+# on unconfigured panels (see on_boot) and is exposed to Home Assistant.
+# ---------------------------------------------------------------------------
+switch:
+  - platform: template
+    name: Web Setup Mode
+    id: web_setup_mode
+    icon: mdi:web-box
+    entity_category: config
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      - lambda: |-
+          if (esphome::web_server_idf::espcontrol_web_server_set_active(true)) {
+            ESP_LOGI("setup_mode", "Web setup mode on: http://%s", network::get_use_address().c_str());
+          } else {
+            ESP_LOGW("setup_mode", "Web server not initialized yet");
+          }
+    on_turn_off:
+      - lambda: |-
+          esphome::web_server_idf::espcontrol_web_server_set_active(false);
+          ESP_LOGI("setup_mode", "Web setup mode off; RAM returned to the panel");
 
 # ---------------------------------------------------------------------------
 # Ambient light sensor (LDR on GPIO34, brighter = lower reading)

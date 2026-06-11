@@ -185,7 +185,38 @@ void AsyncWebServer::end() {
   }
 }
 
+#ifdef ESPCONTROL_WEB_DEFERRED
+namespace {
+// Deferred startup state for low-RAM panels (e.g. the no-PSRAM CYD): the
+// httpd task, sockets, and buffers only exist while setup mode is active.
+AsyncWebServer *global_deferred_server = nullptr;  // NOLINT
+bool global_web_server_active = false;             // NOLINT
+}  // namespace
+
+bool espcontrol_web_server_active() { return global_web_server_active; }
+
+bool espcontrol_web_server_set_active(bool active) {
+  if (global_deferred_server == nullptr)
+    return false;
+  if (active == global_web_server_active)
+    return true;
+  global_web_server_active = active;
+  if (active) {
+    global_deferred_server->begin();
+  } else {
+    global_deferred_server->end();
+  }
+  return true;
+}
+#endif  // ESPCONTROL_WEB_DEFERRED
+
 void AsyncWebServer::begin() {
+#ifdef ESPCONTROL_WEB_DEFERRED
+  // Record the instance and skip startup until setup mode is requested.
+  global_deferred_server = this;
+  if (!global_web_server_active)
+    return;
+#endif
   if (this->server_) {
     this->end();
   }

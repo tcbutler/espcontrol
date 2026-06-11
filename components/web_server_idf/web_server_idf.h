@@ -240,6 +240,15 @@ class AsyncWebServer {
   std::function<void(AsyncWebServerRequest *request)> on_not_found_{};
 };
 
+#ifdef ESPCONTROL_WEB_DEFERRED
+// Deferred web server startup for low-RAM panels: with this define the
+// server does not start at boot; device YAML toggles it (e.g. from a
+// "Web Setup Mode" switch) so the httpd task only holds RAM while the
+// configuration UI is in use.
+bool espcontrol_web_server_set_active(bool active);
+bool espcontrol_web_server_active();
+#endif
+
 class AsyncWebHandler {
  public:
   virtual ~AsyncWebHandler() {}
