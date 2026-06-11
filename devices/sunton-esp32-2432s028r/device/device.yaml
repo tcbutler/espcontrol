@@ -15,9 +15,13 @@
 substitutions:
   espcontrol_component_url: "https://github.com/tcbutler/espcontrol"
   espcontrol_component_ref: "cyd-support"
-  # Dual-USB board revision defaults (ST7789 panel, inverted colors)
+  # Dual-USB board revision defaults (ST7789 panel). invert_colors stays
+  # FALSE: the UI is dark-themed (black bg, white text), and this panel
+  # renders that correctly without inversion. Setting it true showed the
+  # whole UI inverted — black text on a white background, which read as a
+  # "white screen". If your unit's colours look inverted, flip this.
   cyd_display_model: "ST7789V"
-  cyd_display_invert: "true"
+  cyd_display_invert: "false"
 
 # ---------------------------------------------------------------------------
 # ESP32 platform (4MB flash, no PSRAM, ESP-IDF framework)
