@@ -370,6 +370,19 @@ interval:
   - interval: 5s
     then:
       - lambda: 'global_preferences->sync();'
+  # The button-setup screen tells the user to visit the config URL, so the
+  # web server must be serving whenever that screen is shown. The screen's
+  # own no-usable-cards logic is authoritative (a malformed-but-non-empty
+  # config string would fool the boot-time check alone).
+  - interval: 3s
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return lv_scr_act() == id(button_setup_page)->obj &&
+                     !esphome::web_server_idf::espcontrol_web_server_httpd_running();
+          then:
+            - switch.turn_on: web_setup_mode
   # Self-heal: if setup mode is on but the httpd failed to bind (e.g. it
   # started before the network stack was ready), retry the start.
   - interval: 30s
