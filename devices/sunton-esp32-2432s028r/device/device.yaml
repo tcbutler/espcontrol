@@ -238,7 +238,7 @@ switch:
     on_turn_on:
       - lambda: |-
           if (esphome::web_server_idf::espcontrol_web_server_set_active(true)) {
-            ESP_LOGI("setup_mode", "Web setup mode on: http://%s", network::get_use_address().c_str());
+            ESP_LOGI("setup_mode", "Web setup mode on: http://%s", network::get_use_address());
           } else {
             ESP_LOGW("setup_mode", "Web server not initialized yet");
           }
@@ -333,6 +333,23 @@ lvgl:
   touchscreens:
     - touchscreen_id: my_touchscreen
       long_press_time: 3s
+
+# Show the page navigation arrows only while a carousel page (main grid or
+# a subpage) is active and at least one subpage exists to navigate to.
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          const bool show = !navigation_subpages().empty() &&
+                            espcontrol_on_carousel_page(id(main_page));
+          const bool hidden_now = lv_obj_has_flag(id(page_nav_left_button), LV_OBJ_FLAG_HIDDEN);
+          if (show && hidden_now) {
+            lv_obj_clear_flag(id(page_nav_left_button), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(page_nav_right_button), LV_OBJ_FLAG_HIDDEN);
+          } else if (!show && !hidden_now) {
+            lv_obj_add_flag(id(page_nav_left_button), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(id(page_nav_right_button), LV_OBJ_FLAG_HIDDEN);
+          }
 
 script:
   - id: cyd_status_led_flash

@@ -5,7 +5,8 @@
 - "\U000F0928"  # mdi-wifi-strength-4
 - "\U000F092E"  # mdi-wifi-strength-off-outline
 - "\U000F0200"  # mdi-ethernet
-- "\U000F0142"  # mdi-chevron-right (Subpage indicator)
+- "\U000F0141"  # mdi-chevron-left (Page navigation arrows)
+- "\U000F0142"  # mdi-chevron-right (Subpage indicator, page navigation)
 - "\U000F0590"  # mdi-weather-cloudy
 - "\U000F0F2F"  # mdi-weather-cloudy-alert
 - "\U000F1B5A"  # mdi-weather-dust

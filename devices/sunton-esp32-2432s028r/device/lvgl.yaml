@@ -104,6 +104,56 @@ lvgl:
                 align: center
                 text_align: center
                 text_color: 0xFFFFFF
+      # Page navigation arrows (flank the clock; visible once subpages exist,
+      # cycling main page <-> subpages laterally for small-screen capacity)
+      - obj:
+          id: page_nav_left_button
+          align: top_mid
+          x: -58
+          y: 0
+          width: 40
+          height: 30
+          bg_opa: 0%
+          border_width: 0
+          pad_all: 0
+          scrollable: false
+          scrollbar_mode: "off"
+          clickable: true
+          hidden: true
+          widgets:
+            - label:
+                text: "\U000F0141"
+                text_font: font_icon_status
+                align: center
+                text_align: center
+                text_color: 0xFFFFFF
+          on_press:
+            then:
+              - lambda: 'espcontrol_navigate_adjacent(-1, id(main_page));'
+      - obj:
+          id: page_nav_right_button
+          align: top_mid
+          x: 58
+          y: 0
+          width: 40
+          height: 30
+          bg_opa: 0%
+          border_width: 0
+          pad_all: 0
+          scrollable: false
+          scrollbar_mode: "off"
+          clickable: true
+          hidden: true
+          widgets:
+            - label:
+                text: "\U000F0142"
+                text_font: font_icon_status
+                align: center
+                text_align: center
+                text_color: 0xFFFFFF
+          on_press:
+            then:
+              - lambda: 'espcontrol_navigate_adjacent(1, id(main_page));'
       # Network status (tappable, right side of clock bar)
       - obj:
           id: network_status_button

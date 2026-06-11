@@ -112,6 +112,59 @@ inline NavigationSubpageEntry *navigation_find_slot_target(int slot) {
   return nullptr;
 }
 
+// Lateral paging for small screens: treat the main grid plus every subpage
+// (in display order) as a horizontal carousel. Device YAML wires prev/next
+// arrows to this; devices without arrows never call it.
+inline bool espcontrol_navigate_adjacent(int direction, lv_obj_t *main_page_obj) {
+  if (main_page_obj == nullptr || direction == 0) return false;
+  std::vector<NavigationSubpageEntry *> ordered;
+  for (auto &entry : navigation_subpages()) {
+    if (entry.screen != nullptr) ordered.push_back(&entry);
+  }
+  if (ordered.empty()) return false;
+  std::sort(ordered.begin(), ordered.end(),
+            [](const NavigationSubpageEntry *a, const NavigationSubpageEntry *b) {
+              if (a->display_order != b->display_order) return a->display_order < b->display_order;
+              return a->slot < b->slot;
+            });
+
+  std::vector<lv_obj_t *> pages;
+  pages.push_back(main_page_obj);
+  for (auto *entry : ordered) pages.push_back(entry->screen);
+
+  lv_obj_t *current = lv_scr_act();
+  int index = -1;
+  for (size_t i = 0; i < pages.size(); i++) {
+    if (pages[i] == current) {
+      index = static_cast<int>(i);
+      break;
+    }
+  }
+  // Off-carousel screens (clock, setup) jump back to the main grid.
+  if (index < 0) {
+    navigation_hide_modals();
+    lv_scr_load_anim(main_page_obj, LV_SCR_LOAD_ANIM_NONE, 0, 0, false);
+    return true;
+  }
+
+  int count = static_cast<int>(pages.size());
+  int next = (index + (direction > 0 ? 1 : -1) + count) % count;
+  if (next == index) return false;
+  navigation_hide_modals();
+  lv_scr_load_anim(pages[next], LV_SCR_LOAD_ANIM_NONE, 0, 0, false);
+  return true;
+}
+
+// True when the active LVGL screen is part of the lateral carousel.
+inline bool espcontrol_on_carousel_page(lv_obj_t *main_page_obj) {
+  lv_obj_t *current = lv_scr_act();
+  if (main_page_obj != nullptr && current == main_page_obj) return true;
+  for (auto &entry : navigation_subpages()) {
+    if (entry.screen != nullptr && entry.screen == current) return true;
+  }
+  return false;
+}
+
 inline NavigationSubpageEntry *navigation_find_first_kind(const std::string &kind) {
   std::string wanted = navigation_lower(navigation_trim(kind));
   if (wanted.empty()) return nullptr;
