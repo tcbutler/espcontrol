@@ -1,0 +1,53 @@
+# =============================================================================
+# MEMORY DIAGNOSTICS (NO PSRAM) - Device memory exposed to Home Assistant
+# =============================================================================
+# Heap-only variant of memory_diagnostics.yaml for boards without PSRAM
+# (e.g. the ESP32-2432S028R "Cheap Yellow Display"). The debug platform's
+# psram sensor refuses to validate when the psram component is absent.
+# =============================================================================
+
+debug:
+  update_interval: 60s
+
+sensor:
+  - platform: debug
+    free:
+      name: "Memory: Heap Free Bytes"
+      id: memory_heap_free_bytes
+      entity_category: diagnostic
+      internal: true
+    min_free:
+      name: "Memory: Heap Min Free Bytes"
+      id: memory_heap_min_free_bytes
+      entity_category: diagnostic
+      internal: true
+
+  - platform: template
+    name: "Memory: Heap Free"
+    id: memory_heap_free_percent
+    icon: mdi:memory
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    update_interval: 60s
+    lambda: |-
+      const float total = heap_caps_get_total_size(MALLOC_CAP_INTERNAL);
+      if (total <= 0.0f || isnan(id(memory_heap_free_bytes).state)) {
+        return NAN;
+      }
+      return id(memory_heap_free_bytes).state * 100.0f / total;
+
+  - platform: template
+    name: "Memory: Heap Min Free"
+    id: memory_heap_min_free_percent
+    icon: mdi:memory
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    update_interval: 60s
+    lambda: |-
+      const float total = heap_caps_get_total_size(MALLOC_CAP_INTERNAL);
+      if (total <= 0.0f || isnan(id(memory_heap_min_free_bytes).state)) {
+        return NAN;
+      }
+      return id(memory_heap_min_free_bytes).state * 100.0f / total;

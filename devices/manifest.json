@@ -799,7 +799,8 @@
             "clock_cy": "\"120\""
           },
           "deviceFontPackageKey": "fonts_device",
-          "apiNavigateAction": false
+          "apiNavigateAction": false,
+          "noPsram": true
         }
       }
     }

@@ -366,7 +366,12 @@ def package_file_text(device: dict) -> str:
             include_line("backlight", "!include ../../common/addon/backlight.yaml"),
             include_line("bl_schedule", "!include ../../common/addon/backlight_schedule.yaml"),
             include_line("network", f"!include ../../common/addon/network{network_suffix}.yaml"),
-            include_line("memory_diag", "!include ../../common/addon/memory_diagnostics.yaml"),
+            include_line(
+                "memory_diag",
+                "!include ../../common/addon/memory_diagnostics_nopsram.yaml"
+                if package.get("noPsram")
+                else "!include ../../common/addon/memory_diagnostics.yaml",
+            ),
             include_line(
                 "fw_update",
                 f"!include ../../common/addon/firmware_update{firmware_update_suffix}.yaml",
