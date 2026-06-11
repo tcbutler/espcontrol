@@ -62,6 +62,8 @@ esphome:
     build_flags:
       - "-DESPCONTROL_DISABLE_TODO=1"
       - "-DESPCONTROL_MAX_GRID_SLOTS=4"
+      # 4MB flash: drop the 18-language translation tables; UI stays English.
+      - "-DESPCONTROL_I18N_ENGLISH_ONLY=1"
   on_boot:
     - priority: -100
       then:

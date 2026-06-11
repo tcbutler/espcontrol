@@ -306,6 +306,12 @@ def gen_i18n_header():
         "",
     ]
 
+    lines.extend([
+        "// Define ESPCONTROL_I18N_ENGLISH_ONLY to drop the translation tables on",
+        "// low-flash devices; UI strings then always render in English.",
+        "#ifndef ESPCONTROL_I18N_ENGLISH_ONLY",
+        "",
+    ])
     for code, translated in languages:
         fn = re.sub(r"[^A-Za-z0-9_]", "_", code)
         lines.extend([
@@ -324,13 +330,17 @@ def gen_i18n_header():
         ])
 
     lines.extend([
+        "#endif  // ESPCONTROL_I18N_ENGLISH_ONLY",
+        "",
         "inline const char *espcontrol_i18n(const char *text) {",
         "  if (!text) return \"\";",
+        "#ifndef ESPCONTROL_I18N_ENGLISH_ONLY",
     ])
     for code, _translated in languages:
         fn = re.sub(r"[^A-Za-z0-9_]", "_", code)
         lines.append(f"  if (espcontrol_language_code() == {cpp_string(code)}) return espcontrol_i18n_{fn}(text);")
     lines.extend([
+        "#endif  // ESPCONTROL_I18N_ENGLISH_ONLY",
         "  return text;",
         "}",
         "",

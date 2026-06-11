@@ -15,6 +15,10 @@ inline void set_espcontrol_language(const std::string &language) {
   espcontrol_language_code() = language;
 }
 
+// Define ESPCONTROL_I18N_ENGLISH_ONLY to drop the translation tables on
+// low-flash devices; UI strings then always render in English.
+#ifndef ESPCONTROL_I18N_ENGLISH_ONLY
+
 inline const char *espcontrol_i18n_cs(const char *text) {
   if (!text) return "";
   if (std::strcmp(text, "(untitled)") == 0) return "(bez názvu)";
@@ -3433,8 +3437,11 @@ inline const char *espcontrol_i18n_uk(const char *text) {
   return text;
 }
 
+#endif  // ESPCONTROL_I18N_ENGLISH_ONLY
+
 inline const char *espcontrol_i18n(const char *text) {
   if (!text) return "";
+#ifndef ESPCONTROL_I18N_ENGLISH_ONLY
   if (espcontrol_language_code() == "cs") return espcontrol_i18n_cs(text);
   if (espcontrol_language_code() == "da") return espcontrol_i18n_da(text);
   if (espcontrol_language_code() == "de") return espcontrol_i18n_de(text);
@@ -3454,6 +3461,7 @@ inline const char *espcontrol_i18n(const char *text) {
   if (espcontrol_language_code() == "sv") return espcontrol_i18n_sv(text);
   if (espcontrol_language_code() == "tr") return espcontrol_i18n_tr(text);
   if (espcontrol_language_code() == "uk") return espcontrol_i18n_uk(text);
+#endif  // ESPCONTROL_I18N_ENGLISH_ONLY
   return text;
 }
 
