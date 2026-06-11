@@ -95,6 +95,25 @@
       "rotation": true,
       "ethernetManualInstall": false,
       "subpages": true
+    },
+    {
+      "slug": "sunton-esp32-2432s028r",
+      "installSlug": "sunton-esp32-2432s028r",
+      "name": "Sunton 2.8\" CYD",
+      "docsPath": "/screens/cyd-2432s028r",
+      "screenSize": "2.8 inches",
+      "resolution": "320 x 240",
+      "orientation": "Landscape",
+      "slots": 4,
+      "grid": {
+        "rows": 2,
+        "cols": 2
+      },
+      "chipFamily": "ESP32",
+      "relays": 0,
+      "rotation": false,
+      "ethernetManualInstall": false,
+      "subpages": true
     }
   ]
 }

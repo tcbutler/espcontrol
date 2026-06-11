@@ -3,30 +3,25 @@
 # =============================================================================
 # Feature YAML should reference these functional style IDs, not physical font
 # names or sizes. Sizes remain device-specific behind the same style names.
-# Sizes are roughly 60% of the 480x480 panel set; every byte of glyph data
-# counts against the 4MB flash budget on this board.
+#
+# Flash on this board is 4MB with OTA, so glyph data is aggressively trimmed:
+# icons render at 2bpp, the separate card-icon size is dropped (the manifest
+# maps climateCardIcon to font_icon_main), and the Hebrew extras are omitted.
 # =============================================================================
 
 font:
-  # Main action/setup icons
+  # Main action/setup icons (also used for climate card icons)
   - file: 'https://github.com/Templarian/MaterialDesign-Webfont/raw/v7.4.47/fonts/materialdesignicons-webfont.ttf'
     id: font_icon_main
     size: 36
-    bpp: 4
-    glyphs: !include ../../../common/assets/icon_glyphs.yaml
-
-  # Smaller card icons
-  - file: 'https://github.com/Templarian/MaterialDesign-Webfont/raw/v7.4.47/fonts/materialdesignicons-webfont.ttf'
-    id: font_icon_card
-    size: 26
-    bpp: 4
+    bpp: 2
     glyphs: !include ../../../common/assets/icon_glyphs.yaml
 
   # Status, network, and subpage icons
   - file: 'https://github.com/Templarian/MaterialDesign-Webfont/raw/v7.4.47/fonts/materialdesignicons-webfont.ttf'
     id: font_icon_status
     size: 18
-    bpp: 4
+    bpp: 2
     glyphs: !include ../../../common/assets/network_status_glyphs.yaml
 
   # Main labels and setup body text
@@ -35,9 +30,6 @@ font:
     size: 14
     bpp: 4
     glyphs: !include ../../../common/assets/text_glyphs.yaml
-    extras:
-      - file: "gfonts://Heebo"
-        glyphs: !include ../../../common/assets/hebrew_glyphs.yaml
 
   # Compact supporting text
   - file: "gfonts://Roboto"
@@ -45,9 +37,6 @@ font:
     size: 12
     bpp: 4
     glyphs: !include ../../../common/assets/text_glyphs.yaml
-    extras:
-      - file: "gfonts://Heebo"
-        glyphs: !include ../../../common/assets/hebrew_glyphs.yaml
 
   # Headings and media titles
   - file: "gfonts://Roboto@Light"
@@ -55,9 +44,6 @@ font:
     size: 20
     bpp: 4
     glyphs: !include ../../../common/assets/text_glyphs.yaml
-    extras:
-      - file: "gfonts://Heebo@Light"
-        glyphs: !include ../../../common/assets/hebrew_glyphs.yaml
 
   # Media cover-art screensaver title
   - file: "gfonts://Roboto@Light"
@@ -65,9 +51,6 @@ font:
     size: 26
     bpp: 4
     glyphs: !include ../../../common/assets/text_glyphs.yaml
-    extras:
-      - file: "gfonts://Heebo@Light"
-        glyphs: !include ../../../common/assets/hebrew_glyphs.yaml
 
   # Media cover-art screensaver artist
   - file: "gfonts://Roboto@Light"
@@ -75,9 +58,6 @@ font:
     size: 18
     bpp: 4
     glyphs: !include ../../../common/assets/text_glyphs.yaml
-    extras:
-      - file: "gfonts://Heebo@Light"
-        glyphs: !include ../../../common/assets/hebrew_glyphs.yaml
 
   # Media cover-art screensaver elapsed time
   - file: "gfonts://Roboto"

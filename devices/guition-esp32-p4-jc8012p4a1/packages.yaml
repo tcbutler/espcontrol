@@ -70,6 +70,7 @@ substitutions:
   cover_art_text_color: "0xFFF5E0"
   cover_art_square_overlay: "false"
   cover_art_live_image_updates: "true"
+  cover_art_image_format: "AUTO"
 
 packages:
   # ---------------------------------------------------------------------------

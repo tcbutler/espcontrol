@@ -138,7 +138,8 @@ image:
 artwork_image:
   - url: "https://placehold.co/${cover_art_size}x${cover_art_size}/111111/333333.jpg"
     id: cover_art_downloaded_image
-    format: AUTO
+    # NONE on low-flash devices compiles out the JPEG/PNG decoders.
+    format: ${cover_art_image_format}
     type: RGB565
     byte_order: LITTLE_ENDIAN
     placeholder: cover_art_placeholder

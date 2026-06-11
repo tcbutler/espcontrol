@@ -135,6 +135,7 @@ def cover_art_substitution_lines(device: dict) -> list[str]:
             "cover_art_text_color": "0xFFFFFF",
             "cover_art_square_overlay": "true",
             "cover_art_live_image_updates": "false",
+            "cover_art_image_format": "NONE",
         },
         "esp32-p4-86": {
             "cover_art_size": "720",
@@ -270,6 +271,7 @@ def cover_art_substitution_lines(device: dict) -> list[str]:
         return []
     layout = {**layout}
     layout.setdefault("cover_art_live_image_updates", "true")
+    layout.setdefault("cover_art_image_format", "AUTO")
     return [f'  {key}: "{value}"' for key, value in layout.items()]
 
 

@@ -128,6 +128,22 @@ class AutoFormat(Format):
         PNGFormat().actions()
 
 
+class NoneFormat(Format):
+    """Compile without any image decoders.
+
+    For low-flash devices (e.g. 4MB no-PSRAM panels) that keep the
+    artwork_image instances for API compatibility but never decode images:
+    downloads fail gracefully with "image format unsupported" while
+    libjpeg-turbo and pngle stay out of the binary entirely.
+    """
+
+    def __init__(self):
+        super().__init__("AUTO")
+
+    def actions(self):
+        pass
+
+
 IMAGE_FORMATS = {
     x.image_type: x
     for x in (
@@ -137,6 +153,7 @@ IMAGE_FORMATS = {
     )
 }
 IMAGE_FORMATS.update({"JPG": IMAGE_FORMATS["JPEG"]})
+IMAGE_FORMATS.update({"NONE": NoneFormat()})
 
 ArtworkImage = artwork_image_ns.class_("ArtworkImage", cg.PollingComponent, Image_)
 
