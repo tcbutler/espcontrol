@@ -150,11 +150,14 @@ web_server:
   js_url: https://cdn.jsdelivr.net/gh/tcbutler/espcontrol@fd369c0714eea71cccdd1d8db047eb9aef5a3a88/docs/public/webserver/${device_slug}/www.js?v=${firmware_version}
 
 # Everything shares the ~300KB of internal RAM on this panel: WiFi, LVGL,
-# the web UI, and the API. Keep the native API connection pool modest.
+# the web UI, and the API. Keep the native API connection pool modest, and
+# the send queue short: during config-apply every entity change queues a
+# state update, and queued packets are pure heap pressure at the worst
+# possible moment.
 api:
   listen_backlog: 4
   max_connections: 3
-  max_send_queue: 12
+  max_send_queue: 8
 
 # CYD boards brown out their USB-serial chip when the radio transmits at
 # full power; 8.5dB is the community-standard fix and plenty for indoor use.
@@ -349,7 +352,7 @@ display:
 lvgl:
   id: main_lvgl
   setup_priority: 230
-  buffer_size: 12%
+  buffer_size: 10%
   displays: my_display
   touchscreens:
     - touchscreen_id: my_touchscreen
@@ -358,6 +361,11 @@ lvgl:
 # Show the page navigation arrows only while a carousel page (main grid or
 # a subpage) is active and at least one subpage exists to navigate to.
 interval:
+  # Flush dirty preferences frequently: a watchdog reset during config-apply
+  # must not lose freshly saved cards (NVS commit is a no-op when clean).
+  - interval: 5s
+    then:
+      - lambda: 'global_preferences->sync();'
   # Self-heal: if setup mode is on but the httpd failed to bind (e.g. it
   # started before the network stack was ready), retry the start.
   - interval: 30s

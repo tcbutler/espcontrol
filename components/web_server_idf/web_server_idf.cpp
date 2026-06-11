@@ -180,6 +180,17 @@ void AsyncWebServer::safe_close_with_shutdown(httpd_handle_t hd, int sockfd) {
 
 void AsyncWebServer::end() {
   if (this->server_) {
+    // Force-close every client session first. Long-lived event-source
+    // streams (the config UI keeps one open) otherwise leave httpd_stop
+    // blocked indefinitely, which trips the task watchdog when the server
+    // is stopped at runtime (deferred "setup mode" panels).
+    size_t client_count = CONFIG_LWIP_MAX_SOCKETS;
+    int client_fds[CONFIG_LWIP_MAX_SOCKETS];
+    if (httpd_get_client_list(this->server_, &client_count, client_fds) == ESP_OK) {
+      for (size_t i = 0; i < client_count; i++) {
+        httpd_sess_trigger_close(this->server_, client_fds[i]);
+      }
+    }
     httpd_stop(this->server_);
     this->server_ = nullptr;
   }
