@@ -129,7 +129,7 @@ lvgl:
                 text_color: 0xFFFFFF
           on_press:
             then:
-              - lambda: 'espcontrol_navigate_adjacent(-1, id(main_page));'
+              - lambda: 'espcontrol_navigate_adjacent(-1, id(main_page)->obj);'
       - obj:
           id: page_nav_right_button
           align: top_mid
@@ -153,7 +153,7 @@ lvgl:
                 text_color: 0xFFFFFF
           on_press:
             then:
-              - lambda: 'espcontrol_navigate_adjacent(1, id(main_page));'
+              - lambda: 'espcontrol_navigate_adjacent(1, id(main_page)->obj);'
       # Network status (tappable, right side of clock bar)
       - obj:
           id: network_status_button

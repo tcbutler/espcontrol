@@ -341,7 +341,7 @@ interval:
     then:
       - lambda: |-
           const bool show = !navigation_subpages().empty() &&
-                            espcontrol_on_carousel_page(id(main_page));
+                            espcontrol_on_carousel_page(id(main_page)->obj);
           const bool hidden_now = lv_obj_has_flag(id(page_nav_left_button), LV_OBJ_FLAG_HIDDEN);
           if (show && hidden_now) {
             lv_obj_clear_flag(id(page_nav_left_button), LV_OBJ_FLAG_HIDDEN);
