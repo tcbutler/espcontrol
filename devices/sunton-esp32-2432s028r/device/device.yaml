@@ -187,7 +187,10 @@ api:
 # connections minutes after boot — the panel is USB-powered, keep the radio
 # awake.
 wifi:
-  output_power: 8.5dB
+  # Full TX power (chip default) for range/stability, matching stock CYDs.
+  # An 8.5dB cap was tried to avoid a USB-serial brownout at radio init, but
+  # it weakened WiFi too much to hold a stable link; the boot-time brownout
+  # only blips the USB-serial monitor, not the device itself.
   power_save_mode: none
   # Mesh networks advertise one SSID across many BSSIDs. Without fast_connect
   # the ESP32 rescans and gets band-steered between nodes on every reconnect,
