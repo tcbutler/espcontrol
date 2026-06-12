@@ -145,10 +145,13 @@ class EspControlPanelCard extends HTMLElement {
     }
 
     const actions = document.createElement("div");
-    actions.style.cssText = "display:flex;gap:8px;align-items:center;margin-top:12px";
-    const saveBtn = document.createElement("mwc-button");
-    saveBtn.raised = true;
-    saveBtn.label = "Save to panel";
+    actions.style.cssText = "display:flex;gap:12px;align-items:center;margin-top:16px";
+    // Plain <button> — mwc-button isn't reliably defined in custom-card context.
+    const saveBtn = document.createElement("button");
+    saveBtn.textContent = "Save to panel";
+    saveBtn.style.cssText =
+      "padding:8px 18px;border:none;border-radius:8px;background:var(--primary-color);" +
+      "color:var(--text-primary-color,#fff);font-weight:600;font-size:1em;cursor:pointer";
     saveBtn.addEventListener("click", () => this._save());
     const status = document.createElement("span");
     status.style.cssText = "color:var(--secondary-text-color);font-size:0.9em";
@@ -173,7 +176,7 @@ class EspControlPanelCard extends HTMLElement {
 
     // Card-type select
     const typeSel = document.createElement("select");
-    typeSel.style.cssText = "padding:6px;border-radius:6px";
+    typeSel.style.cssText = "padding:6px;border-radius:6px;width:100%;box-sizing:border-box";
     for (const t of CARD_TYPES) {
       const o = document.createElement("option");
       o.value = t.key; o.textContent = t.label;
@@ -184,7 +187,7 @@ class EspControlPanelCard extends HTMLElement {
 
     // Entity select (filtered by the chosen type's domains)
     const entSel = document.createElement("select");
-    entSel.style.cssText = "padding:6px;border-radius:6px";
+    entSel.style.cssText = "padding:6px;border-radius:6px;width:100%;box-sizing:border-box";
     row.appendChild(entSel);
 
     // Label input (optional)
