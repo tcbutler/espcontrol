@@ -111,8 +111,10 @@ def cover_art_substitution_lines(device: dict) -> list[str]:
             "cover_art_accent_y": "0",
             "cover_art_accent_width": "320",
             "cover_art_accent_height": "240",
-            "cover_art_accent_bg_opa": "80%",
-            "cover_art_accent_opa": "80%",
+            # Opaque accent: a translucent fullscreen overlay forces an LVGL
+            # compositing layer no-PSRAM boards cannot allocate.
+            "cover_art_accent_bg_opa": "100%",
+            "cover_art_accent_opa": "100%",
             "cover_art_panel_x": "0",
             "cover_art_panel_y": "0",
             "cover_art_panel_width": "320",
