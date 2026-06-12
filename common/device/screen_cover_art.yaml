@@ -402,8 +402,10 @@ script:
           lv_obj_set_size(id(cover_art_accent_overlay), fallback_size, fallback_size);
           lv_obj_set_pos(id(cover_art_track_panel), fallback_x, fallback_y);
           lv_obj_set_size(id(cover_art_track_panel), fallback_size, fallback_size);
-          lv_obj_set_style_bg_opa(id(cover_art_accent_overlay), LV_OPA_80, LV_PART_MAIN);
-          lv_obj_set_style_opa(id(cover_art_accent_overlay), LV_OPA_80, LV_PART_MAIN);
+          // Accent opacity comes from the cover_art_accent_*_opa substitutions
+          // applied in the static styles; re-asserting a hardcoded 80% here
+          // overrode them, and object-level opa forces an LVGL compositing
+          // layer that no-PSRAM panels cannot allocate.
           int pad = fallback_size >= 700 ? 36 : 24;
           lv_obj_set_style_pad_top(id(cover_art_track_panel), pad, LV_PART_MAIN);
           lv_obj_set_style_pad_bottom(id(cover_art_track_panel), pad, LV_PART_MAIN);
