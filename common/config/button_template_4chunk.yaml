@@ -8,7 +8,7 @@
 text:
   - platform: template
     name: "${entity_button_config_prefix}${num}${entity_button_config_suffix}"
-    internal: true
+    internal: false
     id: button_${num}_config
     optimistic: true
     restore_value: true

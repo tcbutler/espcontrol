@@ -1302,7 +1302,17 @@ inline void register_ha_control_availability(lv_obj_t *visual_obj, lv_obj_t *inp
 inline void apply_control_availability(lv_obj_t *visual_obj, lv_obj_t *input_obj,
                                        bool available, bool disable_interaction = true) {
   if (visual_obj) {
+#ifdef ESPCONTROL_LOW_RAM
+    // Object-level opa composites the tile and all children through a
+    // full-size ARGB8888 layer (~40KB for one tile) — larger than the
+    // biggest allocatable block on no-PSRAM boards, which hard-hangs the
+    // renderer. Grey out with per-draw opacities instead: same visual cue,
+    // no compositing layer.
+    lv_obj_set_style_bg_opa(visual_obj, available ? LV_OPA_COVER : LV_OPA_50, LV_PART_MAIN);
+    lv_obj_set_style_text_opa(visual_obj, available ? LV_OPA_COVER : LV_OPA_50, LV_PART_MAIN);
+#else
     lv_obj_set_style_opa(visual_obj, available ? LV_OPA_COVER : LV_OPA_50, LV_PART_MAIN);
+#endif
     if (disable_interaction) {
       if (available) lv_obj_clear_state(visual_obj, LV_STATE_DISABLED);
       else lv_obj_add_state(visual_obj, LV_STATE_DISABLED);

@@ -85,6 +85,9 @@ esphome:
       - "-DESPCONTROL_I18N_ENGLISH_ONLY=1"
       # No PSRAM: the web config server only runs while setup mode is on.
       - "-DESPCONTROL_WEB_DEFERRED=1"
+      # No PSRAM: avoid LVGL compositing layers (object-level opa/transforms);
+      # a single tile's ARGB layer exceeds the largest allocatable block.
+      - "-DESPCONTROL_LOW_RAM=1"
   on_boot:
     # The CYD's LCD reset line is not wired to the ESP32, so a software CPU
     # reset can leave the panel controller desynced mid-transaction (blank

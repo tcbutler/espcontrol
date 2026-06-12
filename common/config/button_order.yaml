@@ -11,7 +11,7 @@
 text:
   - platform: template
     name: "${entity_button_order}"
-    internal: true
+    internal: false
     id: button_order
     optimistic: true
     restore_value: true
